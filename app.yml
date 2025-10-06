@@ -1,15 +1,6 @@
 command: ['python', 'main.py']
 
 env:
-  # - name: 'DATABRICKS_HOST'
-  #   value: 'https://dbc-7431baad-3276.cloud.databricks.com'
-  
-  # - name: 'DATABRICKS_CLIENT_ID'
-  #   value: 'edc81e1c-157b-4a6c-86c0-a2d02d0c4024'
-  
-  # - name: 'DATABRICKS_CLIENT_SECRET'
-  #   valueFrom: secret
-  
   - name: 'DATABRICKS_SERVERLESS_COMPUTE_ID'
     value: 'auto'
   
@@ -20,19 +11,19 @@ env:
     value: 'bronze'
   
   - name: 'GROQ_API_KEY'
-    valueFrom: secret
+    valueFrom: groq
   
   - name: 'SUPABASE_URL'
-    valueFrom: secret
+    valueFrom: supabase_url
   
   - name: 'SUPABASE_KEY'
-    valueFrom: secret
+    valueFrom: supabase_key
   
   - name: 'GOOGLE_API_KEY'
-    valueFrom: secret
+    valueFrom: google
   
   - name: 'TAVILY_API_KEY'
-    valueFrom: secret
+    valueFrom: tavily
   
   - name: 'LANGSMITH_TRACING'
     value: 'true'
@@ -41,7 +32,7 @@ env:
     value: https://api.smith.langchain.com
   
   - name: 'LANGSMITH_API_KEY'
-    valueFrom: secret
+    valueFrom: langsmith
   
   - name: 'LANGSMITH_PROJECT'
     value: 'Lakehouse RAG & SQL Agents (PROD)'
