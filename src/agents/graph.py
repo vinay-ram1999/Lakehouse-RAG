@@ -2,12 +2,11 @@ from langgraph.checkpoint.memory import MemorySaver
 from langgraph.graph import StateGraph, START
 from langchain_groq import ChatGroq
 
-from .tools import load_tavily_search_tool
+from .tools import load_tavily_search_tool, query_spark_sql_tool
 from .backend import State, BasicToolNode, route_tools, plot_agent_schema
 from ..load_config import LoadToolsConfig
 
 TOOLS_CFG = LoadToolsConfig()
-
 
 def build_graph():
     """
@@ -48,8 +47,9 @@ def build_graph():
 
     # Load tools with their proper configs
     search_tool = load_tavily_search_tool(TOOLS_CFG.tavily_search_max_results)
+    query_tool = query_spark_sql_tool
 
-    tools = [search_tool]
+    tools = [search_tool, query_tool]
     primary_llm_with_tools = primary_llm.bind_tools(tools)
 
     def chatbot(state: State):
@@ -60,6 +60,7 @@ def build_graph():
     tool_node = BasicToolNode(
         tools=[
             search_tool,
+            query_tool,
         ]
     )
     graph_builder.add_node("tools", tool_node)

@@ -1,11 +1,12 @@
 primary_agent:
-  llm: openai/gpt-oss-120b
+  llm: "openai/gpt-oss-120b"
   llm_temperature: 0.0
 
-spark_sql_agent_configs:
-  uc_catalog_name: "tpch"
-  llm: "llama-3.3-70b-versatile"
+spark_sql_agent:
+  # llm: "llama-3.3-70b-versatile"
+  llm: "openai/gpt-oss-120b"
   llm_temperature: 0.0
+  step_timeout: 5
 
 tavily_search_api:
   max_search_results: 5
@@ -14,4 +15,4 @@ graph_configs:
   thread_id: 1 # This can be adjusted to assign a unique value for each user session, so it's easier to access data later on.
 
 langsmith_memory:
-  directory: memory
+  directory: "memory"
