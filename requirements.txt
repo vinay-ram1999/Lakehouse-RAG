@@ -8,6 +8,7 @@ aiohttp==3.12.15
     # via
     #   aiohttp-retry
     #   langchain-community
+    #   langchain-tavily
     #   unitycatalog-client
 aiohttp-retry==2.9.1
     # via unitycatalog-client
@@ -299,6 +300,7 @@ langchain==0.3.27
     # via
     #   databricks-langchain
     #   langchain-community
+    #   langchain-tavily
     #   unitycatalog-langchain
 langchain-community==0.3.30
     # via
@@ -311,6 +313,7 @@ langchain-core==0.3.78
     #   langchain-google-genai
     #   langchain-groq
     #   langchain-ollama
+    #   langchain-tavily
     #   langchain-text-splitters
     #   langgraph
     #   langgraph-checkpoint
@@ -320,6 +323,8 @@ langchain-google-genai==2.1.12
 langchain-groq==0.3.8
     # via lakehouse-rag (pyproject.toml)
 langchain-ollama==0.3.10
+    # via lakehouse-rag (pyproject.toml)
+langchain-tavily==0.2.12
     # via lakehouse-rag (pyproject.toml)
 langchain-text-splitters==0.3.11
     # via langchain
@@ -612,6 +617,7 @@ requests==2.32.5
     #   jsonschema-path
     #   langchain
     #   langchain-community
+    #   langchain-tavily
     #   langsmith
     #   mlflow-skinny
     #   requests-toolbelt
