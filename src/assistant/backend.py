@@ -1,13 +1,9 @@
 from typing import List, Tuple
 
 from ..load_config import LoadToolsConfig
-from ..agents import build_graph
 from ..utils import create_directory
+from ..agents import build_graph
 from .memory import Memory
-
-
-URL = "https://github.com/Farzad-R/LLM-Zero-to-Hundred/tree/master/RAG-GPT"
-hyperlink = f"[RAG-GPT user guideline]({URL})"
 
 TOOLS_CFG = LoadToolsConfig()
 
@@ -43,16 +39,20 @@ class ChatBot:
         Returns:
             Tuple: Returns an empty string (representing the new user input placeholder) and the updated conversation history.
         """
-        # The config is the **second positional argument** to stream() or invoke()!
         events = graph.stream(
             {"messages": [("user", message)]}, config, stream_mode="values"
         )
         for event in events:
             event["messages"][-1].pretty_print()
 
-        chatbot.append(
-            (message, event["messages"][-1].content))
+        chatbot.append({
+            "role": "user",
+            "content": message
+        })
+        chatbot.append({
+            "role": "assistant",
+            "content": event["messages"][-1].content
+        })
 
-        Memory.write_chat_history_to_file(
-            gradio_chatbot=chatbot, folder_path=TOOLS_CFG.memory_dir, thread_id=TOOLS_CFG.thread_id)
+        # Memory.write_chat_history_to_file(gradio_chatbot=chatbot, folder_path=TOOLS_CFG.memory_dir, thread_id=TOOLS_CFG.thread_id)
         return "", chatbot

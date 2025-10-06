@@ -1,4 +1,4 @@
-from langgraph.graph.message import add_messages
+from langgraph.graph.message import add_messages, AnyMessage
 from langchain_core.messages import ToolMessage
 from IPython.display import Image
 from pyprojroot import here
@@ -49,14 +49,13 @@ class BasicToolNode:
             ValueError: If no messages are found in the input.
         """
         if messages := inputs.get("messages", []):
-            message = messages[-1]
+            message: AnyMessage = messages[-1]
         else:
             raise ValueError("No message found in input")
         outputs = []
         for tool_call in message.tool_calls:
-            tool_result = self.tools_by_name[tool_call["name"]].invoke(
-                tool_call["args"]
-            )
+            tool_result = self.tools_by_name[tool_call["name"]].invoke(tool_call["args"])
+
             outputs.append(
                 ToolMessage(
                     content=json.dumps(tool_result),
@@ -64,6 +63,7 @@ class BasicToolNode:
                     tool_call_id=tool_call["id"],
                 )
             )
+        print(outputs)
         return {"messages": outputs}
 
 

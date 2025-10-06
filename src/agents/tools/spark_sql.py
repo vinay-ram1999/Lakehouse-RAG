@@ -11,7 +11,7 @@ from langchain_groq import ChatGroq
 from typing import List
 import os
 
-from ...prompts.spark_sql import SYSTEM_PROMPT, USER_PROMPT
+from ...prompts.spark_sql import SYSTEM_PROMPT, CHATBOT_PROMPT
 from ...utils.app_utils import get_spark_session_sync
 from ...load_config import LoadToolsConfig
 
@@ -40,7 +40,7 @@ class SparkSQLAgentTool:
 
         prompt = ChatPromptTemplate([
             ("system", SYSTEM_PROMPT),
-            ("user", USER_PROMPT),
+            ("assistant", CHATBOT_PROMPT),
             # Placeholders fill up a **list** of messages
             ("placeholder", "{messages}"),
             ("placeholder", "{agent_scratchpad}"),
@@ -51,17 +51,24 @@ class SparkSQLAgentTool:
         # self.executor.step_timeout = kwargs.get("step_timeout", 5)
 
 
-@tool
-def query_spark_sql_tool(query: str) -> str:
-    """Use this tool to execute queries on Spark SQL. Input should be a search query."""
+@tool()
+def ask_spark_sql_agent(input: str) -> str:
+    """Use this tool to invoke SparkSQL Agent which can execute queries on SparkSession. Handover the user input as input to this tool."""
     spark: SparkSession = get_spark_session_sync()
+
     agent = SparkSQLAgentTool(
         llm = TOOLS_CFG.spqrk_sql_agent_llm,
         spark = spark,
         llm_temerature = TOOLS_CFG.spqrk_sql_agent_llm_temperature,
         **{"step_timeout": TOOLS_CFG.spqrk_sql_agent_step_timeout}
     )
-    # messages = agent.executor.invoke({"input": query})
-    messages = []
-    response = agent.executor.astream({"messages": [("input", query)]}, stream_mode="updates")
+    events = agent.executor.invoke({"messages": [("assistant", input)]})
+    
+    response = []
+
+    event: AnyMessage
+    for event in events["messages"]:
+        event.pretty_print()
+        response.append(event.to_json())
+
     return response

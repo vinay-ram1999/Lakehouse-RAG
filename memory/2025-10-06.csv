@@ -1,3 +1,9 @@
 thread_id,timestamp,user_query,response
 1,04:59:01,"Hi, my name is Vinay!",Hello Vinay! Nice to meet you. How can I help you today?
 1,05:30:29,list all the tables available to query.,"I’m not able to retrieve the catalog information from the workspace at the moment. Could you let me know which database (or schema) you’d like to explore? Once I have that, I can run a `SHOW TABLES` command for the specific database and give you the full list of tables you can query."
+1,15:16:22,"Hi, my name is Vinay!",Hello Vinay! 👋 Nice to meet you. How can I assist you today?
+1,15:36:08,"HI, this is Vinay!
+",Hello Vinay! 👋 How can I assist you today?
+1,15:37:46,"hi this is vinay!
+",Hello Vinay! 👋 How can I help you today?
+1,15:41:43,hi this is vinay,Hi Vinay! 👋 How can I help you today?
