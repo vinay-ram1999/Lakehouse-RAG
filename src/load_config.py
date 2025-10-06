@@ -1,11 +1,6 @@
-from dotenv import load_dotenv
 from pyprojroot import here
 
 import yaml
-import os
-
-load_dotenv()
-
 
 class LoadToolsConfig:
 

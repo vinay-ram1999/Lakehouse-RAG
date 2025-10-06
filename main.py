@@ -1,8 +1,10 @@
+from dotenv import load_dotenv
 import gradio as gr
 
 from src.assistant import ChatBot
 from src.utils import UISettings
 
+load_dotenv()
 
 with gr.Blocks() as demo:
     with gr.Tabs():
