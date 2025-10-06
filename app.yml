@@ -1,0 +1,47 @@
+command: ['python3', 'main.py']
+
+env:
+  - name: 'DATABRICKS_HOST'
+    value: 'https://dbc-7431baad-3276.cloud.databricks.com'
+  
+  - name: 'DATABRICKS_CLIENT_ID'
+    value: 'edc81e1c-157b-4a6c-86c0-a2d02d0c4024'
+  
+  - name: 'DATABRICKS_CLIENT_SECRET'
+    valueFrom: secret
+  
+  - name: 'DATABRICKS_SERVERLESS_COMPUTE_ID'
+    value: 'auto'
+  
+  - name: 'UC_CATALOG_NAME'
+    value: 'tpch'
+  
+  - name: 'UC_SCHEMA_NAME'
+    value: 'bronze'
+  
+  - name: 'GROQ_API_KEY'
+    valueFrom: secret
+  
+  - name: 'SUPABASE_URL'
+    valueFrom: secret
+  
+  - name: 'SUPABASE_KEY'
+    valueFrom: secret
+  
+  - name: 'GOOGLE_API_KEY'
+    valueFrom: secret
+  
+  - name: 'TAVILY_API_KEY'
+    valueFrom: secret
+  
+  - name: 'LANGSMITH_TRACING'
+    value: 'true'
+  
+  - name: 'LANGSMITH_ENDPOINT'
+    value: https://api.smith.langchain.com
+  
+  - name: 'LANGSMITH_API_KEY'
+    valueFrom: secret
+  
+  - name: 'LANGSMITH_PROJECT'
+    value: 'Lakehouse RAG & SQL Agents (PROD)'

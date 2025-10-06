@@ -1,25 +1,61 @@
-from dotenv import load_dotenv
-from databricks.sdk import WorkspaceClient
+import gradio as gr
 
-import os
-import json
-
-load_dotenv()
-
-DATABRICKS_HOST = os.getenv("DATABRICKS_HOST")
-DATABRICKS_TOKEN = os.getenv("DATABRICKS_TOKEN")
-UC_CATALOG_NAME = os.getenv("UC_CATALOG_NAME")
-UC_SCHEMA_NAME = os.getenv("UC_SCHEMA_NAME")
-
-w = WorkspaceClient(
-  host  = DATABRICKS_HOST,
-  token = DATABRICKS_TOKEN
-)
-
-for c in w.catalogs.list():
-  print(c.full_name)
+from src.assistant import ChatBot
+from src.utils import UISettings
 
 
-for t in w.tables.list(catalog_name=UC_CATALOG_NAME, schema_name=UC_SCHEMA_NAME):
-  print(json.dumps(t.as_dict(), indent=4))
+with gr.Blocks() as demo:
+    with gr.Tabs():
+        with gr.TabItem("AgentGraph"):
+            ##############
+            # First ROW:
+            ##############
+            with gr.Row() as row_one:
+                chatbot = gr.Chatbot(
+                    [],
+                    elem_id="chatbot",
+                    bubble_full_width=False,
+                    height=500,
+                    avatar_images=(
+                        ("images/AI_RT.png"), "images/openai.png"),
+                    # render=False
+                )
+                # **Adding like/dislike icons
+                chatbot.like(UISettings.feedback, None, None)
+            ##############
+            # SECOND ROW:
+            ##############
+            with gr.Row():
+                input_txt = gr.Textbox(
+                    lines=3,
+                    scale=8,
+                    placeholder="Enter text and press enter, or upload PDF files",
+                    container=False,
+                )
 
+            ##############
+            # Third ROW:
+            ##############
+            with gr.Row() as row_two:
+                text_submit_btn = gr.Button(value="Submit text")
+                clear_button = gr.ClearButton([input_txt, chatbot])
+            ##############
+            # Process:
+            ##############
+            txt_msg = input_txt.submit(fn=ChatBot.respond,
+                                       inputs=[chatbot, input_txt],
+                                       outputs=[input_txt,
+                                                chatbot],
+                                       queue=False).then(lambda: gr.Textbox(interactive=True),
+                                                         None, [input_txt], queue=False)
+
+            txt_msg = text_submit_btn.click(fn=ChatBot.respond,
+                                            inputs=[chatbot, input_txt],
+                                            outputs=[input_txt,
+                                                     chatbot],
+                                            queue=False).then(lambda: gr.Textbox(interactive=True),
+                                                              None, [input_txt], queue=False)
+
+
+if __name__ == "__main__":
+    demo.launch()
