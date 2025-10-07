@@ -561,6 +561,8 @@ pyjwt==2.10.1
     # via supabase-auth
 pyparsing==3.2.5
     # via matplotlib
+pypdf==6.1.1
+    # via lakehouse-rag (pyproject.toml)
 pyperclip==1.11.0
     # via fastmcp
 pyprojroot==0.3.0

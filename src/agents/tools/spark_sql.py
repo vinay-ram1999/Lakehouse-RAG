@@ -51,7 +51,7 @@ class SparkSQLAgentTool:
         # self.executor.step_timeout = kwargs.get("step_timeout", 5)
 
 
-@tool()
+@tool
 def ask_spark_sql_agent(input: str) -> str:
     """Use this tool to invoke SparkSQL Agent which can execute queries on SparkSession. Handover the user input as input to this tool."""
     spark: SparkSession = get_spark_session_sync()
