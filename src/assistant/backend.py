@@ -1,9 +1,12 @@
-from typing import List, Tuple
+from langchain_core.messages import AnyMessage, HumanMessage, AIMessage, ToolMessage
 
+from typing import List, Generator
+
+from ..agents.backend import pretty_print_messages
 from ..load_config import LoadToolsConfig
 from ..utils import create_directory
 from ..agents import build_graph
-from .memory import Memory
+
 
 TOOLS_CFG = LoadToolsConfig()
 
@@ -15,19 +18,11 @@ create_directory("memory")
 
 class ChatBot:
     """
-    A class to handle chatbot interactions by utilizing a pre-defined agent graph. The chatbot processes
-    user messages, generates appropriate responses, and saves the chat history to a specified memory directory.
-
-    Attributes:
-        config (dict): A configuration dictionary that stores specific settings such as the `thread_id`.
-
-    Methods:
-        respond(chatbot: List, message: str) -> Tuple:
-            Processes the user message through the agent graph, generates a response, appends it to the chat history,
-            and writes the chat history to a file.
+    A class to handle chatbot interactions by utilizing a pre-defined agent graph. 
+    The chatbot processes user messages, generates appropriate responses.
     """
     @staticmethod
-    def respond(chatbot: List, message: str) -> Tuple:
+    def respond(chatbot: List, message: str) -> Generator:
         """
         Processes a user message using the agent graph, generates a response, and appends it to the chat history.
         The chat history is also saved to a memory file for future reference.
@@ -39,20 +34,32 @@ class ChatBot:
         Returns:
             Tuple: Returns an empty string (representing the new user input placeholder) and the updated conversation history.
         """
-        events = graph.stream(
-            {"messages": [("user", message)]}, config, stream_mode="values"
-        )
-        for event in events:
-            event["messages"][-1].pretty_print()
-
         chatbot.append({
             "role": "user",
             "content": message
         })
-        chatbot.append({
-            "role": "assistant",
-            "content": event["messages"][-1].content
-        })
 
-        # Memory.write_chat_history_to_file(gradio_chatbot=chatbot, folder_path=TOOLS_CFG.memory_dir, thread_id=TOOLS_CFG.thread_id)
-        return "", chatbot
+        events = graph.stream({"messages": [("user", message)]}, config=config, stream_mode=["messages", "updates"])#, print_mode="values")
+
+        event: AnyMessage
+        for event in events:
+            if event[0] == "updates":
+                pretty_print_messages(event[1])
+            elif event[0] == "messages":
+                display = ""
+                response: AnyMessage = event[1][0]
+                if isinstance(response, AIMessage):
+                    display += f"*Agent: `{response.name}`*\n"
+                    text = response.content if response.content else response.additional_kwargs.get("reasoning_content", "")
+                    display += f"{text}\n"
+                elif isinstance(response, ToolMessage):
+                    display += f"*Tool: `{response.name}`*\n"
+                    text = response.content
+                    display += f"{text}\n"
+                
+                chatbot.append({
+                    "role": "assistant",
+                    "content": display
+                })
+
+            yield "", chatbot

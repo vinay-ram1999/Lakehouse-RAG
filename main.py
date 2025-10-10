@@ -29,7 +29,7 @@ with gr.Blocks() as demo:
         fn=ChatBot.respond,
         inputs=[chatbot, input_txt],
         outputs=[input_txt, chatbot],
-        queue=False
+        queue=True
     ).then(
         lambda: gr.Textbox(interactive=True), None, [input_txt], queue=False
     )
