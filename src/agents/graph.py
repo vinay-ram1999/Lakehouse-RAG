@@ -24,8 +24,8 @@ SCHEMA = os.environ.get("UC_SCHEMA_NAME", "bronze")
 def build_graph() -> CompiledStateGraph:
     """Builds a graph with multi-agent supervisor architecture"""
 
-    spark_sql_agent_llm = ChatGroq(model=TOOLS_CFG.spark_sql_agent_llm, temperature=TOOLS_CFG.spark_sql_agent_llm_temperature)
-    # spark_sql_agent_llm = ChatOllama(model="gpt-oss:120b-cloud", temperature=TOOLS_CFG.spark_sql_agent_llm_temperature) #NOTE local dev
+    # spark_sql_agent_llm = ChatGroq(model=TOOLS_CFG.spark_sql_agent_llm, temperature=TOOLS_CFG.spark_sql_agent_llm_temperature)
+    spark_sql_agent_llm = ChatOllama(model="gpt-oss:120b-cloud", temperature=TOOLS_CFG.spark_sql_agent_llm_temperature) #NOTE local dev
     spark_sql_tools = get_spark_sql_tools(spark_sql_agent_llm)
 
     spark_sql_agent_prompt = ChatPromptTemplate([
@@ -36,8 +36,8 @@ def build_graph() -> CompiledStateGraph:
 
     spark_sql_agent = create_react_agent(model=spark_sql_agent_llm, tools=spark_sql_tools, prompt=spark_sql_agent_prompt, name=TOOLS_CFG.spark_sql_agent_name)
 
-    supervisor_llm = ChatGroq(model=TOOLS_CFG.supervisor_agent_llm, temperature=TOOLS_CFG.supervisor_agent_llm_temperature)
-    # supervisor_llm = ChatOllama(model="gpt-oss:120b-cloud", temperature=TOOLS_CFG.supervisor_agent_llm_temperature) #NOTE local dev
+    # supervisor_llm = ChatGroq(model=TOOLS_CFG.supervisor_agent_llm, temperature=TOOLS_CFG.supervisor_agent_llm_temperature)
+    supervisor_llm = ChatOllama(model="gpt-oss:120b-cloud", temperature=TOOLS_CFG.supervisor_agent_llm_temperature) #NOTE local dev
     search_tool = load_tavily_search_tool(TOOLS_CFG.tavily_search_max_results)
     
     supervisor = create_supervisor(

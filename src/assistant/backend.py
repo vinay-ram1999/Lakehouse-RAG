@@ -4,7 +4,6 @@ from typing import List, Generator
 
 from ..agents.backend import pretty_print_messages
 from ..load_config import LoadToolsConfig
-from ..utils import create_directory
 from ..agents import build_graph
 
 
@@ -12,9 +11,6 @@ TOOLS_CFG = LoadToolsConfig()
 
 graph = build_graph()
 config = {"configurable": {"thread_id": TOOLS_CFG.thread_id}}
-
-create_directory("memory")
-
 
 class ChatBot:
     """

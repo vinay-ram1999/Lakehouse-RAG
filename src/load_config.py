@@ -28,6 +28,3 @@ class LoadToolsConfig:
         # LangGraph configs
         self.thread_id = str(app_config["graph_configs"]["thread_id"])
 
-        # Langsmith memory config
-        self.memory_dir = here(app_config["langsmith_memory"]["directory"])
-
