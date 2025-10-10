@@ -1,5 +1,6 @@
 from langgraph.graph.message import add_messages, AnyMessage
 from langchain_core.messages import convert_to_messages
+from langgraph.graph.state import CompiledStateGraph
 from langchain_core.messages import ToolMessage
 from IPython.display import Image
 from pyprojroot import here
@@ -68,11 +69,8 @@ class BasicToolNode:
         return {"messages": outputs}
 
 
-def route_tools(
-    state: State,
-) -> Literal["tools", "__end__"]:
+def route_tools(state: State) -> Literal["tools", "__end__"]:
     """
-
     Determines whether to route to the ToolNode or end the flow.
 
     This function is used in the conditional_edge and checks the last message in the state for tool calls. If tool
@@ -100,7 +98,7 @@ def route_tools(
     return "__end__"
 
 
-def plot_agent_schema(graph):
+def plot_agent_schema(graph: CompiledStateGraph):
     """Plots the agent schema using a graph object, if possible.
 
     Tries to display a visual representation of the agent's graph schema
@@ -116,12 +114,9 @@ def plot_agent_schema(graph):
         None
     """
     try:
-        image = Image(graph.get_graph().draw_mermaid_png())
         output_path = here("images/final_graph.png")
-        with open(output_path, "wb") as f:
-            f.write(image.data)
+        graph.get_graph().draw_mermaid_png(output_file_path=output_path)
     except Exception:
-        # This requires some extra dependencies and is optional
         return print("Graph could not be displayed.")
 
 
