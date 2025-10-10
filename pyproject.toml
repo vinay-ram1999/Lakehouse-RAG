@@ -16,6 +16,7 @@ dependencies = [
     "langchain-ollama>=0.3.10",
     "langchain-tavily>=0.2.11",
     "langgraph>=0.6.8",
+    "langgraph-supervisor>=0.0.29",
     "langsmith>=0.4.31",
     "pypdf>=6.1.1",
     "pyprojroot>=0.3.0",

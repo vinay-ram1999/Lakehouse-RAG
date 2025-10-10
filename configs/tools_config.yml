@@ -1,8 +1,10 @@
-primary_agent:
+supervisor_agent:
+  name: "supervisor"
   llm: "openai/gpt-oss-120b"
   llm_temperature: 0.0
 
 spark_sql_agent:
+  name: "spark_sql_agent"
   llm: "openai/gpt-oss-120b"
   # llm: "llama-3.3-70b-versatile"
   llm_temperature: 0.0

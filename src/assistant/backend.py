@@ -1,5 +1,6 @@
 from typing import List, Tuple
 
+from ..agents.backend import pretty_print_messages
 from ..load_config import LoadToolsConfig
 from ..utils import create_directory
 from ..agents import build_graph
@@ -39,11 +40,9 @@ class ChatBot:
         Returns:
             Tuple: Returns an empty string (representing the new user input placeholder) and the updated conversation history.
         """
-        events = graph.stream(
-            {"messages": [("user", message)]}, config, stream_mode="values"
-        )
+        events = graph.stream({"messages": [("user", message)]}, config=config)
         for event in events:
-            event["messages"][-1].pretty_print()
+            pretty_print_messages(event)
 
         chatbot.append({
             "role": "user",
@@ -51,7 +50,7 @@ class ChatBot:
         })
         chatbot.append({
             "role": "assistant",
-            "content": event["messages"][-1].content
+            "content": event[TOOLS_CFG.supervisor_agent_name]["messages"][-1].content
         })
 
         # Memory.write_chat_history_to_file(gradio_chatbot=chatbot, folder_path=TOOLS_CFG.memory_dir, thread_id=TOOLS_CFG.thread_id)
