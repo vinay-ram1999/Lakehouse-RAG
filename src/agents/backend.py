@@ -98,7 +98,7 @@ def route_tools(state: State) -> Literal["tools", "__end__"]:
     return "__end__"
 
 
-def plot_agent_schema(graph: CompiledStateGraph):
+def plot_agent_schema(graph: CompiledStateGraph, fname: str):
     """Plots the agent schema using a graph object, if possible.
 
     Tries to display a visual representation of the agent's graph schema
@@ -114,8 +114,9 @@ def plot_agent_schema(graph: CompiledStateGraph):
         None
     """
     try:
-        output_path = here("images/final_graph.png")
-        graph.get_graph().draw_mermaid_png(output_file_path=output_path)
+        output_path = here("images")
+        output_fpath = output_path.joinpath(fname + ".png")
+        graph.get_graph().draw_mermaid_png(output_file_path=output_fpath)
     except Exception:
         return print("Graph could not be displayed.")
 

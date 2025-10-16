@@ -10,6 +10,12 @@ spark_sql_agent:
   llm_temperature: 0.0
   step_timeout: 5
 
+rag_agent:
+  name: "rag_agent"
+  embedding: "models/gemini-embedding-001"
+  vs_table: "documents_temp"
+  vs_query: "match_documents_temp"
+
 tavily_search_api:
   max_search_results: 5
 
