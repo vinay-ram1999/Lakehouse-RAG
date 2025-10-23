@@ -35,4 +35,4 @@ env:
     valueFrom: langsmith
   
   - name: 'LANGSMITH_PROJECT'
-    value: 'Lakehouse RAG & SQL Agents (PROD)'
+    value: 'AgenticLakehouse (PROD)'

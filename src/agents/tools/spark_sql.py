@@ -7,7 +7,7 @@ from langchain_community.tools.spark_sql.tool import (
     QueryCheckerTool,
 )
 from langchain_core.tools import BaseTool
-
+from pydantic import BaseModel, Field
 from dotenv import load_dotenv
 
 from typing import List
@@ -19,6 +19,14 @@ load_dotenv()
 
 CATALOG = os.environ.get("UC_CATALOG_NAME", "tpch")
 SCHEMA = os.environ.get("UC_SCHEMA_NAME", "bronze")
+
+
+class SparkSQLResponse(BaseModel):
+    """Always use this tool to structure your response to the user."""
+    # question: str = Field(..., description="The user question.")
+    query: str = Field(..., description="The query you have executed using 'query_sql_db' tool.")
+    response: str = Field(..., description="The final response after the query is executed.")
+
 
 class DynamicQuerySparkSQLTool(QuerySparkSQLTool):
     """Dynamic variant of QuerySparkSQLTool with auto-refreshing SparkSession."""

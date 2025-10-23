@@ -15,8 +15,8 @@ from .backend import State, BasicToolNode, route_tools, plot_agent_schema
 from ..prompts.spark_sql import SYSTEM_PROMPT as SPARK_SQL_SYS_PROMPT
 from ..prompts.supervisor import SYSTEM_PROMPT as SUPERVISOR_PROMPT
 from .tools.rag import load_supabase_retriever_tool, route_question
+from .tools.spark_sql import get_spark_sql_tools, SparkSQLResponse
 from .tools.tavily_search import load_tavily_search_tool
-from .tools.spark_sql import get_spark_sql_tools
 from ..load_config import LoadToolsConfig
 
 TOOLS_CFG = LoadToolsConfig()
@@ -29,8 +29,8 @@ def build_graph() -> CompiledStateGraph:
     """Builds a graph with multi-agent supervisor architecture"""
 
     spark_sql_agent_llm = ChatGroq(model=TOOLS_CFG.spark_sql_agent_llm, temperature=TOOLS_CFG.spark_sql_agent_llm_temperature)
-    # spark_sql_agent_llm = ChatOllama(model="gpt-oss:120b-cloud", temperature=TOOLS_CFG.spark_sql_agent_llm_temperature) #NOTE local dev
-    spark_sql_tools = get_spark_sql_tools(spark_sql_agent_llm)
+    # spark_sql_agent_llm = ChatOllama(model="gpt-oss:120b-cloud", temperature=TOOLS_CFG.spark_sql_agent_llm_temperature) #NOTE local dev only
+    spark_sql_tools = get_spark_sql_tools(spark_sql_agent_llm) + [SparkSQLResponse]
 
     spark_sql_agent_prompt = ChatPromptTemplate([
             ("system", SPARK_SQL_SYS_PROMPT.format(**{"CATALOG_NAME": CATALOG, "SCHEMA_NAME": SCHEMA})),
@@ -43,7 +43,7 @@ def build_graph() -> CompiledStateGraph:
     plot_agent_schema(spark_sql_agent, "spark_sql_agent")
 
     supervisor_llm = ChatGroq(model=TOOLS_CFG.supervisor_agent_llm, temperature=TOOLS_CFG.supervisor_agent_llm_temperature)
-    # supervisor_llm = ChatOllama(model="gpt-oss:120b-cloud", temperature=TOOLS_CFG.supervisor_agent_llm_temperature) #NOTE local dev
+    # supervisor_llm = ChatOllama(model="gpt-oss:120b-cloud", temperature=TOOLS_CFG.supervisor_agent_llm_temperature) #NOTE local dev only
     search_tool = load_tavily_search_tool(TOOLS_CFG.tavily_search_max_results)
     retriever_tool = load_supabase_retriever_tool()
     
@@ -52,7 +52,9 @@ def build_graph() -> CompiledStateGraph:
         agents=[spark_sql_agent],
         tools=[search_tool, retriever_tool],
         prompt=SUPERVISOR_PROMPT,
-        add_handoff_back_messages=True,
+        # add_handoff_back_messages=True,
+        add_handoff_back_messages=False,
+        add_handoff_messages=False,
         output_mode="full_history",
         parallel_tool_calls=False,
         supervisor_name=TOOLS_CFG.supervisor_agent_name,
