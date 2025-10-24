@@ -12,9 +12,14 @@ class LoadToolsConfig:
             app_config = yaml.load(cfg, Loader=yaml.FullLoader)
 
         # Primary Agent
-        self.supervisor_agent_name = app_config["supervisor_agent"]["name"]
-        self.supervisor_agent_llm = app_config["supervisor_agent"]["llm"]
-        self.supervisor_agent_llm_temperature = app_config["supervisor_agent"]["llm_temperature"]
+        self.router_agent_name = app_config["router_agent"]["name"]
+        self.router_agent_llm = app_config["router_agent"]["llm"]
+        self.router_agent_llm_temperature = app_config["router_agent"]["llm_temperature"]
+        
+        # Web Search Agent
+        self.web_search_agent_name = app_config["web_search_agent"]["name"]
+        self.web_search_agent_llm = app_config["web_search_agent"]["llm"]
+        self.web_search_agent_llm_temperature = app_config["web_search_agent"]["llm_temperature"]
 
         # Spark SQL Agent config
         self.spark_sql_agent_name = app_config["spark_sql_agent"]["name"]

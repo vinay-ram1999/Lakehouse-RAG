@@ -12,7 +12,7 @@ from dotenv import load_dotenv
 from typing import Literal
 import os
 
-from ...prompts.supervisor import ROUTER_PROMPT
+from ...prompts.router import RAG_ROUTER_PROMPT
 from ...load_config import LoadToolsConfig
 
 
@@ -65,7 +65,7 @@ def route_question(state: MessagesState):
 
     route_prompt = ChatPromptTemplate.from_messages(
         [
-            ("system", ROUTER_PROMPT),
+            ("system", RAG_ROUTER_PROMPT),
             ("human", "{question}"),
         ]
     )

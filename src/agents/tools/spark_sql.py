@@ -22,7 +22,7 @@ SCHEMA = os.environ.get("UC_SCHEMA_NAME", "bronze")
 
 
 class SparkSQLResponse(BaseModel):
-    """Always use this tool to structure your response to the user."""
+    """Should always use this tool to structure your response to the user."""
     # question: str = Field(..., description="The user question.")
     query: str = Field(..., description="The query you have executed using 'query_sql_db' tool.")
     response: str = Field(..., description="The final response after the query is executed.")

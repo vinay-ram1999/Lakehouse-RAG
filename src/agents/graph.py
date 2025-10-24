@@ -1,23 +1,25 @@
 from langgraph.graph import StateGraph, MessagesState, START, END
+from langgraph_supervisor.supervisor import _make_call_agent
+from langgraph_supervisor.handoff import create_handoff_tool
 from langgraph.prebuilt import create_react_agent, ToolNode
 from langchain_core.prompts import ChatPromptTemplate
 from langgraph.graph.state import CompiledStateGraph
 from langgraph.checkpoint.memory import MemorySaver
 from langchain_ollama.chat_models import ChatOllama
-from langgraph_supervisor import create_supervisor
 from langgraph.errors import GraphRecursionError
 from langchain_core.messages import AnyMessage
 from langchain_groq import ChatGroq
 
 import os
 
-from .backend import State, BasicToolNode, route_tools, plot_agent_schema
+from ..prompts.web_search import SYSTEM_PROMPT as WEB_SEARCH_SYS_PROMPT
 from ..prompts.spark_sql import SYSTEM_PROMPT as SPARK_SQL_SYS_PROMPT
-from ..prompts.supervisor import SYSTEM_PROMPT as SUPERVISOR_PROMPT
-from .tools.rag import load_supabase_retriever_tool, route_question
+from ..prompts.router import SYSTEM_PROMPT as ROUTER_PROMPT
 from .tools.spark_sql import get_spark_sql_tools, SparkSQLResponse
 from .tools.tavily_search import load_tavily_search_tool
+from .tools.rag import load_supabase_retriever_tool
 from ..load_config import LoadToolsConfig
+from .backend import plot_agent_schema
 
 TOOLS_CFG = LoadToolsConfig()
 
@@ -27,6 +29,23 @@ SCHEMA = os.environ.get("UC_SCHEMA_NAME", "bronze")
 
 def build_graph() -> CompiledStateGraph:
     """Builds a graph with multi-agent supervisor architecture"""
+
+    web_search_agent_llm = ChatGroq(model=TOOLS_CFG.web_search_agent_llm, temperature=TOOLS_CFG.web_search_agent_llm_temperature)
+    # web_search_agent_llm = ChatOllama(model="gpt-oss:120b-cloud", temperature=TOOLS_CFG.web_search_agent_llm_temperature) #NOTE local dev only
+    search_tool = load_tavily_search_tool(TOOLS_CFG.tavily_search_max_results)
+
+    web_search_agent_prompt = ChatPromptTemplate([
+            ("system", WEB_SEARCH_SYS_PROMPT),
+            ("placeholder", "{messages}"),
+            ("placeholder", "{agent_scratchpad}"),
+    ])
+
+    web_search_agent = create_react_agent(
+        model=web_search_agent_llm, 
+        tools=[search_tool], 
+        prompt=web_search_agent_prompt, 
+        name=TOOLS_CFG.web_search_agent_name
+    )
 
     spark_sql_agent_llm = ChatGroq(model=TOOLS_CFG.spark_sql_agent_llm, temperature=TOOLS_CFG.spark_sql_agent_llm_temperature)
     # spark_sql_agent_llm = ChatOllama(model="gpt-oss:120b-cloud", temperature=TOOLS_CFG.spark_sql_agent_llm_temperature) #NOTE local dev only
@@ -38,42 +57,53 @@ def build_graph() -> CompiledStateGraph:
             ("placeholder", "{agent_scratchpad}"),
     ])
 
-    spark_sql_agent = create_react_agent(model=spark_sql_agent_llm, tools=spark_sql_tools, prompt=spark_sql_agent_prompt, name=TOOLS_CFG.spark_sql_agent_name)
-
-    plot_agent_schema(spark_sql_agent, "spark_sql_agent")
-
-    supervisor_llm = ChatGroq(model=TOOLS_CFG.supervisor_agent_llm, temperature=TOOLS_CFG.supervisor_agent_llm_temperature)
-    # supervisor_llm = ChatOllama(model="gpt-oss:120b-cloud", temperature=TOOLS_CFG.supervisor_agent_llm_temperature) #NOTE local dev only
-    search_tool = load_tavily_search_tool(TOOLS_CFG.tavily_search_max_results)
-    retriever_tool = load_supabase_retriever_tool()
-    
-    supervisor = create_supervisor(
-        model=supervisor_llm,
-        agents=[spark_sql_agent],
-        tools=[search_tool, retriever_tool],
-        prompt=SUPERVISOR_PROMPT,
-        # add_handoff_back_messages=True,
-        add_handoff_back_messages=False,
-        add_handoff_messages=False,
-        output_mode="full_history",
-        parallel_tool_calls=False,
-        supervisor_name=TOOLS_CFG.supervisor_agent_name,
+    spark_sql_agent = create_react_agent(
+        model=spark_sql_agent_llm, 
+        tools=spark_sql_tools, 
+        prompt=spark_sql_agent_prompt, 
+        name=TOOLS_CFG.spark_sql_agent_name
     )
 
-    # supervisor.add_node("tavily_search", ToolNode([search_tool]))
-    # supervisor.add_node("supabase_retriever", ToolNode([retriever_tool]))
-    # supervisor.add_conditional_edges(
-    #     TOOLS_CFG.supervisor_agent_name,
-    #     route_question,
-    #     {
-    #         "web_search": "tavily_search",
-    #         "retriever": "supabase_retriever"
-    #     },
-    # )
+    router_llm = ChatGroq(model=TOOLS_CFG.router_agent_llm, temperature=TOOLS_CFG.router_agent_llm_temperature)
+    # router_llm = ChatOllama(model="gpt-oss:120b-cloud", temperature=TOOLS_CFG.router_agent_llm_temperature) #NOTE local dev only
+    retriever_tool = load_supabase_retriever_tool()
 
-    # supervisor.add_edge("tavily_search", TOOLS_CFG.supervisor_agent_name)
+    agents = [spark_sql_agent, web_search_agent]
+    agent_names = [agent.name for agent in agents]
+    
+    handoff_tools = [
+        create_handoff_tool(
+            agent_name=agent_name,
+            add_handoff_messages=False
+        )
+        for agent_name in agent_names
+    ]
+    tool_node = ToolNode(handoff_tools)
+
+    router_agent = create_react_agent(
+        model=router_llm,
+        tools=tool_node,
+        prompt=ROUTER_PROMPT,
+        name=TOOLS_CFG.router_agent_name,
+    )
+
+    builder = StateGraph(MessagesState)
+    builder.add_node(router_agent, destinations=tuple(agent_names) + (END,))
+    builder.add_edge(START, router_agent.name)
+    for agent in agents:
+        builder.add_node(
+            agent.name,
+            _make_call_agent(
+                agent,
+                "full_history", #NOTE "full_history" or "last_message"
+                add_handoff_back_messages=False,
+                supervisor_name=router_agent.name,
+            ),
+        )
+        builder.add_edge(agent.name, END)
 
     memory = MemorySaver()
-    graph = supervisor.compile(checkpointer=memory)
-    plot_agent_schema(graph, "supervisor_agent")
+    graph = builder.compile(checkpointer=memory)
+    
+    plot_agent_schema(graph, "router_agent")
     return graph

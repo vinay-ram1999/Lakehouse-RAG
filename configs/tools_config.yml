@@ -1,5 +1,10 @@
-supervisor_agent:
-  name: "supervisor"
+router_agent:
+  name: "router_agent"
+  llm: "openai/gpt-oss-120b"
+  llm_temperature: 0.0
+
+web_search_agent:
+  name: "web_search_agent"
   llm: "openai/gpt-oss-120b"
   llm_temperature: 0.0
 
