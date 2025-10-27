@@ -144,8 +144,27 @@ The Gradio app will now be running on `http://127.0.0.1:7860`.
 
 The long-term vision is to create a fully integrated, live "Lakehouse Agent" for the Databricks Workspace.
 
-* Allow users to select `catalog` and `schema` in the frontend before starting a coversation (similar to Genie)
+* Allow users to select `catalog` and `schema` in the frontend before starting a chat/coversation (similar to Genie).
+* Reduce Spark query latency by allocating a dedicated compute cluster instead of using serverless compute if you know the application is used widely. 
 * Move Beyond Spark SQL: The current reliance on executing Spark SQL queries for metadata (e.g., "list tables") is a bottleneck. The next step is to leverage the Unity Catalog REST API directly, potentially maintaining an `MCP-server` for the agent to access all schema and metadata instantly.
 * MLFlow Integration: Extend the agent's capabilities to interact with MLFlow, allowing users to ask questions about model performance, compare runs, identify best-performing models, or retrieve feature importance.
 * Databricks Jobs Monitoring: Integrate with the Databricks Jobs API to enable monitoring, debugging, and optimization suggestions for your production pipelines.
 * Build an autonomous agent that periodically processes the entire Lakehouse metadata using the `MCP-server` and build knowledge graphs (GraphRAG) with lineage and other information which can be accessed by other agents to generate accurate responses.
+
+## Databricks App Demo
+
+- Query: List all tables available to query
+![list_tables](images/list_tables.png)
+
+- Query: List the top 3 nations based on the total number of customers from that nation.
+![query2](images/query2.png)
+<!-- ![query1](images/query1.png) -->
+
+- Query: Give me the weather forecast for Detroit, MI for this week in Celsius
+![weather](images/web_search.png)
+
+- LangSmith Tracing:
+![langsmith](images/langsmith.png)
+
+- Supabase Vector Store:
+![supabase](images/supabase.png)
